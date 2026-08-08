@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="工程計算器">
+<meta name="theme-color" content="#1f2937">
+<link rel="manifest" href="manifest.json">
+<title>工程計算器 V1</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;background:#f3f4f6;color:#111827}
+header{background:#1f2937;color:white;padding:22px 18px calc(18px + env(safe-area-inset-top));text-align:center}
+h1{margin:0;font-size:24px}.sub{opacity:.8;font-size:13px;margin-top:5px}
+main{max-width:680px;margin:auto;padding:14px 14px 40px}
+.card{background:white;border-radius:16px;padding:16px;margin:12px 0;box-shadow:0 2px 10px #0000000d}
+h2{font-size:18px;margin:0 0 14px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label{font-size:13px;color:#4b5563}input,select{width:100%;margin-top:5px;padding:12px;border:1px solid #d1d5db;border-radius:10px;font-size:16px;background:white}
+button{width:100%;border:0;border-radius:11px;padding:13px;font-size:16px;font-weight:700;background:#1f2937;color:white;margin-top:12px}
+button.secondary{background:#e5e7eb;color:#111827}
+.result{font-size:30px;font-weight:800;text-align:center;padding:10px 0}.unit{text-align:center;color:#6b7280}
+.row{display:flex;justify-content:space-between;border-bottom:1px solid #eee;padding:9px 0}.row:last-child{border:0}.money{font-weight:800}
+.small{font-size:12px;color:#6b7280;line-height:1.5}
+@media(max-width:430px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><h1>🧱 工程計算器</h1><div class="sub">V1｜混凝土・鋼筋・面積・金額</div></header>
+<main>
+
+<section class="card">
+<h2>① 混凝土計算</h2>
+<div class="grid">
+<div><label>長度（m）</label><input id="cl" type="number" step="0.01" value="4.3"></div>
+<div><label>寬度（m）</label><input id="cw" type="number" step="0.01" value="6.3"></div>
+<div><label>厚度（cm）</label><input id="ct" type="number" step="0.1" value="18"></div>
+<div><label>數量</label><input id="cq" type="number" step="1" value="2"></div>
+<div><label>混凝土單價（元/m³）</label><input id="cp" type="number" step="1" value="3200"></div>
+</div>
+<button onclick="calcConcrete()">計算混凝土</button>
+<div id="concreteOut"></div>
+</section>
+
+<section class="card">
+<h2>② 鋼筋重量</h2>
+<div class="grid">
+<div><label>鋼筋號數</label>
+<select id="bar"><option value="3">#3（D10）</option><option value="4">#4（D13）</option><option value="5" selected>#5（D16）</option><option value="6">#6（D19）</option><option value="7">#7（D22）</option><option value="8">#8（D25）</option></select></div>
+<div><label>總長度（m）</label><input id="bl" type="number" step="0.01" value="100"></div>
+<div><label>單價（元/kg）</label><input id="bp" type="number" step="0.1" value="23"></div>
+</div>
+<button onclick="calcBar()">計算鋼筋</button>
+<div id="barOut"></div>
+<div class="small">理論重量採常用公式：d² ÷ 162（kg/m）。實際採購仍以材料規格與供應商資料為準。</div>
+</section>
+
+<section class="card">
+<h2>③ 面積／坪數</h2>
+<div class="grid">
+<div><label>長度（m）</label><input id="al" type="number" step="0.01" value="10"></div>
+<div><label>寬度（m）</label><input id="aw" type="number" step="0.01" value="5"></div>
+</div>
+<button onclick="calcArea()">計算面積</button>
+<div id="areaOut"></div>
+</section>
+
+
+<section class="card">
+<h2>⑤ 模板工程計算</h2>
+<div class="grid">
+<div><label>構件</label>
+<select id="tc" onchange="templateFields()">
+<option value="column">柱</option>
+<option value="beam">樑</option>
+<option value="wall">牆</option>
+<option value="slab">版／地坪</option>
+</select></div>
+<div><label>數量</label><input id="tq" type="number" step="1" value="4"></div>
+<div><label>長度（m）</label><input id="tl" type="number" step="0.01" value="0.25"></div>
+<div><label>寬度（m）</label><input id="tw" type="number" step="0.01" value="0.35"></div>
+<div><label>高度（m）</label><input id="th" type="number" step="0.01" value="3.1"></div>
+<div><label>模板單價（元/m²）</label><input id="tp" type="number" step="1" value="1100"></div>
+</div>
+<button onclick="calcTemplate()">計算模板</button>
+<div id="templateOut"></div>
+<div class="small">
+柱：四面模板＝2×(長＋寬)×高×數量。<br>
+樑：預設三面模板＝(2×高＋寬)×長×數量。<br>
+牆：預設雙面模板＝2×長×高×數量。<br>
+版／地坪：預設單面模板＝長×寬×數量。
+</div>
+</section>
+
+<section class="card">
+<h2>④ 金額計算</h2>
+<div class="grid">
+<div><label>數量</label><input id="mq" type="number" step="0.01" value="10"></div>
+<div><label>單價（元）</label><input id="mp" type="number" step="1" value="800"></div>
+</div>
+<button onclick="calcMoney()">計算金額</button>
+<div id="moneyOut"></div>
+</section>
+
+<section class="card">
+<button class="secondary" onclick="clearAll()">清除輸入</button>
+</section>
+</main>
+<script>
+const n=id=>Number(document.getElementById(id).value)||0;
+const money=x=>Math.round(x).toLocaleString("zh-TW");
+function calcConcrete(){
+ let v=n("cl")*n("cw")*(n("ct")/100)*n("cq"), cost=v*n("cp");
+ document.getElementById("concreteOut").innerHTML=`<div class="result">${v.toFixed(4)} m³</div><div class="row"><span>預估金額</span><span class="money">$${money(cost)}</span></div><div class="small">建議訂料量可再依現場損耗另行增加。</div>`;
+}
+function calcBar(){
+ const dia={3:10,4:13,5:16,6:19,7:22,8:25}[document.getElementById("bar").value];
+ let kg=n("bl")*dia*dia/162, cost=kg*n("bp");
+ document.getElementById("barOut").innerHTML=`<div class="result">${kg.toFixed(2)} kg</div><div class="row"><span>預估材料費</span><span class="money">$${money(cost)}</span></div>`;
+}
+function calcArea(){
+ let a=n("al")*n("aw"), ping=a/3.305785;
+ document.getElementById("areaOut").innerHTML=`<div class="result">${a.toFixed(2)} m²</div><div class="unit">約 ${ping.toFixed(2)} 坪</div>`;
+}
+function calcMoney(){
+ let total=n("mq")*n("mp");
+ document.getElementById("moneyOut").innerHTML=`<div class="result">$${money(total)}</div>`;
+}
+function clearAll(){
+ document.querySelectorAll("input").forEach(i=>i.value="0");
+ document.querySelectorAll('[id$="Out"]').forEach(x=>x.innerHTML="");
+}
+if("serviceWorker" in navigator) window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js"));
+
+function calcTemplate(){
+ const type=document.getElementById("tc").value;
+ const l=n("tl"), w=n("tw"), h=n("th"), q=n("tq"), p=n("tp");
+ let area=0, formula="";
+ if(type==="column"){ area=2*(l+w)*h*q; formula="2 × (長＋寬) × 高 × 數量"; }
+ if(type==="beam"){ area=(2*h+w)*l*q; formula="(2 × 高＋寬) × 長 × 數量"; }
+ if(type==="wall"){ area=2*l*h*q; formula="2 × 長 × 高 × 數量"; }
+ if(type==="slab"){ area=l*w*q; formula="長 × 寬 × 數量"; }
+ const cost=area*p;
+ document.getElementById("templateOut").innerHTML=
+ `<div class="result">${area.toFixed(2)} m²</div>
+ <div class="row"><span>計算方式</span><span>${formula}</span></div>
+ <div class="row"><span>預估模板費</span><span class="money">$${money(cost)}</span></div>`;
+}
+
+</script>
+</body>
+</html>
