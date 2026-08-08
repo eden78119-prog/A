@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1f2937">
+<link rel="manifest" href="manifest.json">
+<title>工程工具箱｜V8 工程管理中心</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f3f4f6;color:#172033;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC",Arial,sans-serif}
+header{background:#1f2937;color:#fff;padding:24px 16px;text-align:center;position:sticky;top:0;z-index:10}
+h1{margin:0;font-size:27px}.sub{margin-top:6px;font-size:13px;opacity:.82}
+#updateBar{display:none;background:#fff3cd;color:#664d03;padding:10px 14px;text-align:center;font-weight:700}
+#updateBar button{width:auto;margin:0 0 0 8px;padding:7px 12px;background:#664d03;color:white}
+nav{display:flex;gap:7px;overflow:auto;background:#fff;padding:9px;position:sticky;top:83px;z-index:9;border-bottom:1px solid #ddd}
+nav button{min-width:max-content;width:auto;margin:0;padding:9px 12px;background:#edf0f4;color:#172033;font-size:13px}
+main{max-width:780px;margin:auto;padding:12px 12px 60px}.card{background:#fff;border-radius:17px;padding:16px;margin:12px 0;box-shadow:0 2px 12px #0000000b}
+h2{font-size:19px;margin:0 0 14px}h3{font-size:16px;margin:20px 0 10px;border-top:1px solid #eee;padding-top:14px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label{display:block;font-size:13px;color:#5c6675;margin-bottom:5px}input,select,textarea{width:100%;padding:12px;border:1px solid #d3d8e0;border-radius:11px;font-size:16px;background:#fff}textarea{min-height:85px}
+button{width:100%;padding:12px;border:0;border-radius:11px;background:#1f2937;color:#fff;font-size:16px;font-weight:700;margin-top:10px}button.secondary{background:#e5e7eb;color:#172033}button.danger{background:#fee2e2;color:#991b1b}
+.dashboard-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.stat{background:linear-gradient(135deg,#f8fafc,#eef2f7);border:1px solid #e3e7ed;border-radius:14px;padding:13px}
+.stat .k{font-size:12px;color:#687386}.stat .v{font-size:22px;font-weight:800;margin-top:3px}
+.quick{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.quick button{margin:0}
+.integrity{padding:12px;border-radius:12px;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;line-height:1.65}
+@media(min-width:640px){.dashboard-grid{grid-template-columns:repeat(4,1fr)}.quick{grid-template-columns:repeat(4,1fr)}}
+
+.result{margin-top:12px;padding:13px;border-radius:11px;background:#f0f4f8;line-height:1.7}.total{font-size:23px;font-weight:800;text-align:right;margin-top:10px}
+.item{border-top:1px solid #e5e7eb;padding:11px 0}.item:first-child{border-top:0}.row{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:5px 0}.small{font-size:12px;color:#6b7280}
+.thumb{width:100%;max-height:260px;object-fit:cover;border-radius:10px;margin-top:8px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.actions button{margin-top:8px}.notice{padding:10px;border-radius:10px;background:#eef5ff;color:#244c7c;font-size:13px}
+@media(max-width:480px){.grid{grid-template-columns:1fr}nav{top:0}}
+@media print{header,nav,#updateBar,main{display:none!important}#printArea{display:block!important;padding:20px}#printArea table{width:100%;border-collapse:collapse}#printArea th,#printArea td{border:1px solid #777;padding:7px}}
+#printArea{display:none}
+
+/* V8 工程管理中心 */
+.kpi{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.kpi-card{background:#fff;border:1px solid #e1e5eb;border-radius:14px;padding:13px}
+.kpi-title{font-size:12px;color:#6b7280}.kpi-value{font-size:22px;font-weight:800;margin-top:4px}
+.progress{height:10px;background:#e8ebef;border-radius:999px;overflow:hidden;margin-top:8px}
+.progress>i{display:block;height:100%;width:0;background:#1f2937;border-radius:999px}
+.searchbox{display:flex;gap:8px}.searchbox input{flex:1}.searchbox button{width:auto;margin:0;white-space:nowrap}
+.v8-bottom{display:none;top:auto!important;height:auto!important;align-items:center!important;align-content:center!important}
+@media(max-width:600px){
+.v8-bottom{display:grid!important;grid-template-columns:repeat(5,1fr);position:fixed!important;left:0;right:0;top:auto!important;bottom:0!important;height:72px!important;min-height:72px!important;background:#fff;border-top:1px solid #ddd;z-index:30;padding:6px 6px calc(6px + env(safe-area-inset-bottom));gap:4px;box-shadow:0 -3px 12px #00000012}
+.v8-bottom button{margin:0!important;padding:6px 3px!important;height:58px!important;min-height:58px!important;width:100%!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;font-size:11px;background:#f1f3f6;color:#172033;position:relative!important;top:auto!important}
+main{padding-bottom:100px}}
+
+</style>
+</head>
+<body>
+<header><h1>🏗️ 工程工具箱</h1><div class="sub">V8 工程管理中心｜完整工程計算與管理</div></header>
+<div id="updateBar">🔄 發現工程工具箱新版！<button onclick="applyUpdate()">立即更新</button></div>
+<nav>
+<button onclick="go('dashboard')">總覽</button><button onclick="go('project')">工程</button><button onclick="go('calc')">計算</button><button onclick="go('quote')">報價</button><button onclick="go('material')">材料</button><button onclick="go('labor')">人工</button><button onclick="go('expense')">支出</button><button onclick="go('record')">施工</button><button onclick="go('document')">文件</button>
+</nav>
+<main>
+
+
+<section class="card" id="dashboard">
+<h2>📊 0️⃣ 工程總覽</h2>
+<div class="integrity"><b>V6 → V7 資料相容：</b>沿用原 V6 本機資料鍵與資料結構；升級時只補齊缺少的欄位，不刪除原有資料或未知欄位。</div>
+<div class="dashboard-grid" style="margin-top:10px">
+<div class="stat"><div class="k">工程</div><div class="v" id="dashProjects">0</div></div>
+<div class="stat"><div class="k">報價項目</div><div class="v" id="dashQuotes">0</div></div>
+<div class="stat"><div class="k">材料</div><div class="v" id="dashMaterials">0</div></div>
+<div class="stat"><div class="k">人工紀錄</div><div class="v" id="dashLabor">0</div></div>
+<div class="stat"><div class="k">支出</div><div class="v" id="dashExpenses">0</div></div>
+<div class="stat"><div class="k">施工紀錄</div><div class="v" id="dashRecords">0</div></div>
+<div class="stat"><div class="k">請款筆數</div><div class="v" id="dashInvoices">0</div></div>
+<div class="stat"><div class="k">照片</div><div class="v" id="dashPhotos">0</div></div>
+</div>
+<div class="result"><b>目前報價合計：</b><span id="dashQuoteTotal">$0</span>　　<b>已請款：</b><span id="dashInvoiceTotal">$0</span></div>
+<h3>⚡ 快速前往</h3>
+<div class="quick">
+<button onclick="go('calc')">🧮 工程計算</button>
+<button onclick="go('quote')">💰 工程報價</button>
+<button onclick="go('expense')">💸 工程支出</button>
+<button onclick="go('document')">📄 請款管理</button>
+</div>
+
+<h3>📈 工程財務概況</h3>
+<div class="kpi">
+<div class="kpi-card"><div class="kpi-title">預算</div><div class="kpi-value" id="v8Budget">$0</div></div>
+<div class="kpi-card"><div class="kpi-title">已報價</div><div class="kpi-value" id="v8Quote">$0</div></div>
+<div class="kpi-card"><div class="kpi-title">材料＋人工</div><div class="kpi-value" id="v8Direct">$0</div></div>
+<div class="kpi-card"><div class="kpi-title">工程支出</div><div class="kpi-value" id="v8Expense">$0</div></div>
+<div class="kpi-card"><div class="kpi-title">毛利估算</div><div class="kpi-value" id="v8Profit">$0</div></div>
+<div class="kpi-card"><div class="kpi-title">預算使用率</div><div class="kpi-value" id="v8BudgetRate">0%</div></div>
+</div>
+<div class="result"><div class="small">支出／預算</div><div class="progress"><i id="v8Progress"></i></div></div>
+<h3>🔎 全站快速搜尋</h3>
+<div class="searchbox"><input id="v8Search" placeholder="搜尋工程、材料、報價、施工紀錄…"><button onclick="v8Search()">搜尋</button></div>
+<div class="result" id="v8SearchOut">輸入關鍵字後，可搜尋目前儲存在本機的 V6/V7 資料。</div>
+
+<h3>🔍 V6 資料完整性檢查</h3>
+<button class="secondary" onclick="integrityCheck()">檢查原 V6 資料</button>
+<div class="result" id="integrityOut">尚未檢查</div>
+</section>
+
+<section class="card" id="project">
+<h2>🏠 ① 工程專案</h2>
+<div class="grid">
+<div><label>工程名稱</label><input id="pName" placeholder="例如：自用住宅"></div><div><label>工程地點</label><input id="pPlace"></div>
+<div><label>客戶名稱</label><input id="pCustomer"></div><div><label>工程預算</label><input id="pBudget" type="number" value="0"></div>
+<div><label>開工日期</label><input id="pStart" type="date"></div><div><label>預計完工</label><input id="pEnd" type="date"></div>
+</div><button onclick="saveProject()">💾 儲存工程</button><div id="projectList"></div>
+</section>
+
+<section class="card" id="calc">
+<h2>🧮 ② 工程計算</h2>
+<h3>混凝土</h3>
+<div class="grid">
+<div><label>長度 m</label><input id="cl" type="number" step=".01" value="4.3"></div><div><label>寬度 m</label><input id="cw" type="number" step=".01" value="6.3"></div>
+<div><label>厚度 cm</label><input id="ct" type="number" step=".1" value="18"></div><div><label>數量</label><input id="cq" type="number" value="2"></div>
+<div><label>單價／m³</label><input id="cp" type="number" value="3200"></div><div><label>損耗 %</label><input id="cLoss" type="number" value="0"></div>
+</div><button onclick="concrete()">計算混凝土</button><div class="result" id="concreteOut">尚未計算</div>
+
+<h3>鋼筋</h3>
+<div class="grid"><div><label>鋼筋號數</label><select id="barNo"><option value=".560">#3 D10</option><option value=".994">#4 D13</option><option value="1.560" selected>#5 D16</option><option value="2.250">#6 D19</option><option value="3.040">#7 D22</option><option value="3.970">#8 D25</option></select></div>
+<div><label>總長 m</label><input id="barLen" type="number" value="100"></div><div><label>單價／kg</label><input id="barPrice" type="number" value="23"></div></div>
+<button onclick="rebar()">計算鋼筋</button><div class="result" id="barOut">尚未計算</div>
+
+<h3>面積／坪數</h3><div class="grid"><div><label>長 m</label><input id="areaL" type="number"></div><div><label>寬 m</label><input id="areaW" type="number"></div></div>
+<button onclick="areaCalc()">計算面積</button><div class="result" id="areaOut">尚未計算</div>
+
+<h3>模板進階計算</h3>
+<div class="grid">
+<div><label>構件</label><select id="formType"><option value="column">柱</option><option value="beam">樑</option><option value="wall">牆</option><option value="slab">版／地坪</option></select></div>
+<div><label>數量</label><input id="formQty" type="number" value="1"></div>
+<div><label>長度 m</label><input id="formL" type="number" step=".01"></div><div><label>寬度 m</label><input id="formW" type="number" step=".01"></div>
+<div><label>高度／厚度 m</label><input id="formH" type="number" step=".01"></div><div><label>單價／m²</label><input id="formPrice" type="number" value="1100"></div>
+</div><button onclick="formwork()">計算模板</button><div class="result" id="formOut">尚未計算</div>
+
+<h3>磚牆</h3><div class="grid"><div><label>牆長 m</label><input id="wallL" type="number"></div><div><label>牆高 m</label><input id="wallH" type="number"></div>
+<div><label>每 m² 磚數</label><input id="brickRate" type="number" value="50"></div><div><label>損耗 %</label><input id="brickLoss" type="number" value="5"></div><div><label>單價／塊</label><input id="brickPrice" type="number" value="8"></div></div>
+<button onclick="brickCalc()">計算磚數</button><div class="result" id="brickOut">尚未計算</div>
+
+<h3>磁磚</h3><div class="grid"><div><label>施工面積 m²</label><input id="tileArea" type="number"></div><div><label>長 cm</label><input id="tileL" type="number" value="60"></div><div><label>寬 cm</label><input id="tileW" type="number" value="60"></div>
+<div><label>損耗 %</label><input id="tileLoss" type="number" value="5"></div><div><label>每箱片數</label><input id="tileBox" type="number" value="4"></div><div><label>單片價格</label><input id="tilePrice" type="number" value="150"></div></div>
+<button onclick="tileCalc()">計算磁磚</button><div class="result" id="tileOut">尚未計算</div>
+
+<h3>油漆／防水</h3><div class="grid"><div><label>施工面積 m²</label><input id="paintArea" type="number"></div><div><label>每 L 施工量 m²</label><input id="paintRate" type="number" value="8"></div>
+<div><label>施工道數</label><input id="paintCoats" type="number" value="2"></div><div><label>損耗 %</label><input id="paintLoss" type="number" value="10"></div><div><label>單價／L</label><input id="paintPrice" type="number" value="450"></div></div>
+<button onclick="paintCalc()">計算材料</button><div class="result" id="paintOut">尚未計算</div>
+
+<h3>單筆金額</h3><div class="grid"><div><label>數量</label><input id="moneyQty" type="number" value="1"></div><div><label>單價</label><input id="moneyPrice" type="number" value="1000"></div></div>
+<button onclick="moneyCalc()">計算</button><div class="result" id="moneyOut">尚未計算</div>
+
+<h3>單位換算</h3><div class="grid"><div><label>cm → mm</label><input id="cmVal" type="number" value="18"></div><div><label>坪 → m²</label><input id="pingVal" type="number" value="1"></div><div><label>m² → 坪</label><input id="sqmVal" type="number"></div><div><label>m³ → L</label><input id="m3Val" type="number"></div></div>
+<button onclick="convert()">換算</button><div class="result" id="convertOut">尚未換算</div>
+</section>
+
+<section class="card" id="quote"><h2>💰 ③ 工程報價單</h2>
+<div class="grid"><div><label>項目</label><input id="quoteName"></div><div><label>單位</label><input id="quoteUnit" value="m²"></div><div><label>數量</label><input id="quoteQty" type="number" value="1"></div><div><label>單價</label><input id="quotePrice" type="number" value="1000"></div></div>
+<button onclick="addQuote()">＋加入報價項目</button><div id="quoteList"></div><div class="total">報價合計：$<span id="quoteTotal">0</span></div>
+<div class="grid"><div><label>客戶</label><input id="quoteCustomer"></div><div><label>客戶電話</label><input id="quotePhone" type="tel" placeholder="例如：09xxxxxxxx"></div><div><label>日期</label><input id="quoteDate" type="date"></div></div>
+<label>備註</label><textarea id="quoteNote"></textarea><button onclick="printQuote()">📄 產生／列印報價單</button>
+</section>
+
+<section class="card" id="material"><h2>📦 ④ 材料管理</h2>
+<div class="grid"><div><label>材料</label><input id="matName"></div><div><label>單位</label><input id="matUnit" value="包"></div><div><label>進貨</label><input id="matIn" type="number"></div><div><label>使用</label><input id="matUse" type="number"></div><div><label>單價</label><input id="matPrice" type="number"></div></div>
+<button onclick="addMaterial()">＋新增材料</button><div id="materialList"></div><div class="total">材料金額：$<span id="materialTotal">0</span></div>
+</section>
+
+<section class="card" id="labor"><h2>👷 ⑤ 人工管理</h2>
+<div class="grid"><div><label>工種</label><input id="laborName" value="泥作"></div><div><label>人數</label><input id="laborPeople" type="number" value="1"></div><div><label>工日</label><input id="laborDays" type="number" value="1"></div><div><label>日薪</label><input id="laborRate" type="number" value="3000"></div></div>
+<button onclick="addLabor()">＋加入人工</button><div id="laborList"></div><div class="total">人工：$<span id="laborTotal">0</span></div>
+</section>
+
+<section class="card" id="expense"><h2>💸 ⑥ 工程支出</h2>
+<div class="grid"><div><label>日期</label><input id="expDate" type="date"></div><div><label>類別</label><select id="expCat"><option>材料</option><option>人工</option><option>油資</option><option>停車</option><option>機具</option><option>其他</option></select></div><div><label>說明</label><input id="expDesc"></div><div><label>金額</label><input id="expAmount" type="number"></div></div>
+<button onclick="addExpense()">＋加入支出</button><div id="expenseList"></div><div class="total">支出：$<span id="expenseTotal">0</span></div>
+</section>
+
+<section class="card" id="record"><h2>📝 ⑦ 每日施工紀錄</h2>
+<div class="grid"><div><label>日期</label><input id="recDate" type="date"></div><div><label>人員</label><input id="recWorkers"></div></div>
+<label>工作內容</label><textarea id="recContent"></textarea><label>備註</label><textarea id="recNote"></textarea>
+<button onclick="addRecord()">＋儲存施工紀錄</button><div id="recordList"></div>
+<h3>📸 工地照片</h3><input id="photoInput" type="file" accept="image/*" multiple><div class="notice">照片會儲存在此瀏覽器。大量照片可能增加手機儲存量。</div><div id="photoList"></div>
+</section>
+
+<section class="card"><h2>📊 ⑧ 工程成本／利潤</h2>
+<div class="grid"><div><label>工程收入</label><input id="income" type="number" value="100000"></div><div><label>材料費</label><input id="costMaterial" type="number" value="0"></div><div><label>人工費</label><input id="costLabor" type="number" value="0"></div><div><label>其他支出</label><input id="costOther" type="number" value="0"></div></div>
+<button onclick="profitCalc()">計算成本／利潤</button><div class="result" id="profitOut">尚未計算</div>
+</section>
+
+<section class="card" id="document"><h2>📄 ⑨ 請款管理</h2>
+<div class="grid"><div><label>工程總價</label><input id="invTotal" type="number" value="100000"></div><div><label>本期比例 %</label><input id="invRate" type="number" value="30"></div><div><label>本期實際請款</label><input id="invAmount" type="number"></div><div><label>請款日期</label><input id="invDate" type="date"></div></div>
+<button onclick="addInvoice()">＋加入本期請款</button><div id="invoiceList"></div><div class="result" id="invoiceOut">尚未計算</div><button onclick="printInvoice()">📄 列印／另存請款單 PDF</button>
+<h3>工程備忘錄</h3><textarea id="memo"></textarea><button onclick="saveMemo()">儲存備忘</button>
+</section>
+
+<section class="card"><h2>💾 ⑩ 資料備份／還原</h2>
+<div class="notice">工程資料、報價、材料、人工、支出、施工紀錄、請款與備忘會儲存在本機瀏覽器。</div>
+<button onclick="exportData()">📤 匯出全部資料</button><input id="restoreFile" type="file" accept=".json" onchange="restoreData(this)">
+<button class="secondary" onclick="clearData()">⚠️ 清除本機資料</button><div class="result" id="dataStatus">資料管理正常</div>
+</section>
+</main>
+<div id="printArea"></div>
+
+<script>
+const $=id=>document.getElementById(id),N=id=>Number($(id).value)||0,M=v=>Math.round(v).toLocaleString("zh-TW");
+const KEY="engineering_toolbox_v6_stable";
+const EMPTY_DATA={projects:[],quotes:[],materials:[],labor:[],expenses:[],records:[],photos:[],invoices:[],memo:""};
+function loadData(){
+  try{
+    const raw=localStorage.getItem(KEY);
+    const parsed=raw?JSON.parse(raw):{};
+    const base=(parsed&&typeof parsed==="object"&&!Array.isArray(parsed))?parsed:{};
+    // V7 only adds missing V6 fields; it never deletes existing or unknown fields.
+    Object.keys(EMPTY_DATA).forEach(k=>{if(!(k in base))base[k]=Array.isArray(EMPTY_DATA[k])?[]:""});
+    return base;
+  }catch(e){return {...EMPTY_DATA}}
+}
+let D=loadData();
+function save(){localStorage.setItem(KEY,JSON.stringify(D));render()}
+function go(id){$(id).scrollIntoView({behavior:"smooth",block:"start"})}
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function remove(k,i){D[k].splice(i,1);save()}
+function concrete(){let v=N("cl")*N("cw")*N("ct")/100*N("cq")*(1+N("cLoss")/100);$("concreteOut").innerHTML=`體積：<b>${v.toFixed(4)} m³</b><br>估算金額：<b>$${M(v*N("cp"))}</b>`}
+function rebar(){let kg=N("barNo")*N("barLen");$("barOut").innerHTML=`重量：<b>${kg.toFixed(2)} kg</b><br>材料費：約 <b>$${M(kg*N("barPrice"))}</b>`}
+function areaCalc(){let a=N("areaL")*N("areaW");$("areaOut").innerHTML=`面積：<b>${a.toFixed(2)} m²</b><br>坪數：約 <b>${(a/3.3058).toFixed(2)} 坪</b>`}
+function formwork(){let t=$("formType").value,q=N("formQty"),l=N("formL"),w=N("formW"),h=N("formH"),a=0;
+if(t==="column")a=2*(l+w)*h*q;else if(t==="beam")a=(2*h+w)*l*q;else if(t==="wall")a=2*l*h*q;else a=l*w*q;
+$("formOut").innerHTML=`模板面積：<b>${a.toFixed(2)} m²</b><br>模板費：約 <b>$${M(a*N("formPrice"))}</b>`}
+function brickCalc(){let a=N("wallL")*N("wallH"),q=Math.ceil(a*N("brickRate")*(1+N("brickLoss")/100));$("brickOut").innerHTML=`牆面積：${a.toFixed(2)} m²<br>磚數：約 <b>${q.toLocaleString()} 塊</b><br>材料費：約 <b>$${M(q*N("brickPrice"))}</b>`}
+function tileCalc(){let one=N("tileL")/100*N("tileW")/100,q=Math.ceil(N("tileArea")/one*(1+N("tileLoss")/100)),box=Math.ceil(q/N("tileBox"));$("tileOut").innerHTML=`需要：約 <b>${q.toLocaleString()} 片</b><br>建議：<b>${box} 箱</b><br>材料費：約 <b>$${M(q*N("tilePrice"))}</b>`}
+function paintCalc(){let liters=N("paintArea")/N("paintRate")*N("paintCoats")*(1+N("paintLoss")/100);$("paintOut").innerHTML=`預估用量：<b>${liters.toFixed(1)} L</b><br>材料費：約 <b>$${M(liters*N("paintPrice"))}</b>`}
+function moneyCalc(){$("moneyOut").innerHTML=`金額：<b>$${M(N("moneyQty")*N("moneyPrice"))}</b>`}
+function convert(){$("convertOut").innerHTML=`${N("cmVal")} cm = <b>${(N("cmVal")*10).toFixed(1)} mm</b><br>${N("pingVal")} 坪 ≈ <b>${(N("pingVal")*3.3058).toFixed(2)} m²</b><br>${N("sqmVal")} m² ≈ <b>${(N("sqmVal")/3.3058).toFixed(2)} 坪</b><br>${N("m3Val")} m³ = <b>${N("m3Val")*1000} L</b>`}
+
+function saveProject(){D.projects.unshift({name:$("pName").value,place:$("pPlace").value,customer:$("pCustomer").value,budget:N("pBudget"),start:$("pStart").value,end:$("pEnd").value});save()}
+function addQuote(){D.quotes.push({name:$("quoteName").value||"未命名",unit:$("quoteUnit").value,qty:N("quoteQty"),price:N("quotePrice")});save()}
+function addMaterial(){D.materials.push({name:$("matName").value||"未命名",unit:$("matUnit").value,inn:N("matIn"),use:N("matUse"),price:N("matPrice")});save()}
+function addLabor(){D.labor.push({name:$("laborName").value,people:N("laborPeople"),days:N("laborDays"),rate:N("laborRate")});save()}
+function addExpense(){D.expenses.push({date:$("expDate").value||new Date().toISOString().slice(0,10),cat:$("expCat").value,desc:$("expDesc").value,amount:N("expAmount")});save()}
+function addRecord(){D.records.push({date:$("recDate").value||new Date().toISOString().slice(0,10),workers:$("recWorkers").value,content:$("recContent").value,note:$("recNote").value});save()}
+function addInvoice(){let total=N("invTotal"),amount=N("invAmount")||total*N("invRate")/100;D.invoices.push({date:$("invDate").value||new Date().toISOString().slice(0,10),total,amount});save()}
+function saveMemo(){D.memo=$("memo").value;save();$("dataStatus").textContent="備忘已儲存"}
+
+
+function updateDashboard(){
+  const count=k=>Array.isArray(D[k])?D[k].length:0;
+  $("dashProjects").textContent=count("projects");
+  $("dashQuotes").textContent=count("quotes");
+  $("dashMaterials").textContent=count("materials");
+  $("dashLabor").textContent=count("labor");
+  $("dashExpenses").textContent=count("expenses");
+  $("dashRecords").textContent=count("records");
+  $("dashInvoices").textContent=count("invoices");
+  $("dashPhotos").textContent=count("photos");
+  const qt=(Array.isArray(D.quotes)?D.quotes:[]).reduce((s,x)=>s+((Number(x.qty)||0)*(Number(x.price)||0)),0);
+  const it=(Array.isArray(D.invoices)?D.invoices:[]).reduce((s,x)=>s+(Number(x.amount)||0),0);
+  $("dashQuoteTotal").textContent="$"+M(qt);
+  $("dashInvoiceTotal").textContent="$"+M(it);
+}
+
+function v8Money(n){return "$"+M(Number(n)||0)}
+function v8Update(){
+ const arr=k=>Array.isArray(D[k])?D[k]:[];
+ const budget=arr("projects").reduce((s,x)=>s+(Number(x.budget)||Number(x.pBudget)||0),0);
+ const quote=arr("quotes").reduce((s,x)=>s+(Number(x.qty)||0)*(Number(x.price)||0),0);
+ const mat=arr("materials").reduce((s,x)=>s+(Number(x.in)||Number(x.matIn)||0)*(Number(x.price)||Number(x.matPrice)||0),0);
+ const labor=arr("labor").reduce((s,x)=>s+(Number(x.people)||Number(x.laborPeople)||0)*(Number(x.days)||Number(x.laborDays)||0)*(Number(x.rate)||Number(x.laborRate)||0),0);
+ const expense=arr("expenses").reduce((s,x)=>s+(Number(x.amount)||Number(x.expAmount)||0),0);
+ const direct=mat+labor, profit=quote-expense, rate=budget>0?expense/budget*100:0;
+ $("v8Budget").textContent=v8Money(budget); $("v8Quote").textContent=v8Money(quote);
+ $("v8Direct").textContent=v8Money(direct); $("v8Expense").textContent=v8Money(expense);
+ $("v8Profit").textContent=v8Money(profit); $("v8BudgetRate").textContent=budget>0?rate.toFixed(1)+"%":"0%";
+ $("v8Progress").style.width=Math.min(100,Math.max(0,rate))+"%";
+}
+function v8Search(){
+ const q=($("v8Search").value||"").trim().toLowerCase();
+ if(!q){$("v8SearchOut").textContent="請輸入搜尋關鍵字。";return}
+ const groups=[["工程",D.projects],["報價",D.quotes],["材料",D.materials],["人工",D.labor],["支出",D.expenses],["施工",D.records],["請款",D.invoices],["照片",D.photos]];
+ const hits=[];
+ groups.forEach(([name,list])=>{if(!Array.isArray(list))return;list.forEach((x,i)=>{if(JSON.stringify(x).toLowerCase().includes(q))hits.push(name+" #"+(i+1))})});
+ $("v8SearchOut").innerHTML=hits.length?"🔎 找到 <b>"+hits.length+"</b> 筆：<br>"+hits.slice(0,30).join("、")+(hits.length>30?"……":""):"沒有找到符合「"+q+"」的資料。";
+}
+
+function integrityCheck(){
+  const required=["projects","quotes","materials","labor","expenses","records","photos","invoices","memo"];
+  const missing=required.filter(k=>!(k in D));
+  const types=required.filter(k=>k!=="memo" && !Array.isArray(D[k]));
+  const extra=Object.keys(D).filter(k=>!required.includes(k));
+  if(missing.length===0 && types.length===0){
+    $("integrityOut").innerHTML=`✅ V6 核心資料欄位完整（${required.length} 項）。<br>已保留：工程、報價、材料、人工、支出、施工紀錄、照片、請款、備忘。<br>額外欄位：${extra.length?extra.join("、"):"無"}。<br><b>結論：V7 不會主動刪除原資料。</b>`;
+  }else{
+    $("integrityOut").innerHTML=`⚠️ 發現需要補齊的欄位：${missing.join("、")||"無"}；型別需整理：${types.join("、")||"無"}。V7 會自動補齊，不刪除其他資料。`;
+  }
+}
+
+function render(){updateDashboard();v8Update();
+$("projectList").innerHTML=D.projects.map((x,i)=>`<div class=item><b>${esc(x.name||"未命名工程")}</b><div class=small>${esc(x.place)}｜客戶：${esc(x.customer)}｜預算 $${M(x.budget)}<br>${x.start||""} ～ ${x.end||""}</div><button class=danger onclick="remove('projects',${i})">刪除</button></div>`).join("");
+let qt=0;$("quoteList").innerHTML=D.quotes.map((x,i)=>{let s=x.qty*x.price;qt+=s;return `<div class=item><div class=row><b>${i+1}. ${esc(x.name)}</b><button class=danger style="width:auto;margin:0;padding:7px 10px" onclick="remove('quotes',${i})">刪除</button></div>${x.qty} ${esc(x.unit)} × $${M(x.price)} = <b>$${M(s)}</b></div>`}).join("");$("quoteTotal").textContent=M(qt);
+let mt=0;$("materialList").innerHTML=D.materials.map((x,i)=>{let stock=x.inn-x.use;mt+=x.inn*x.price;return `<div class=item><div class=row><b>${esc(x.name)}</b><button class=danger style="width:auto;margin:0;padding:7px 10px" onclick="remove('materials',${i})">刪除</button></div>進貨 ${x.inn} ${esc(x.unit)}｜使用 ${x.use}｜剩餘 <b>${stock}</b>｜單價 $${M(x.price)}</div>`}).join("");$("materialTotal").textContent=M(mt);
+let lt=0;$("laborList").innerHTML=D.labor.map((x,i)=>{let s=x.people*x.days*x.rate;lt+=s;return `<div class=item><div class=row><b>${esc(x.name)}</b><button class=danger style="width:auto;margin:0;padding:7px 10px" onclick="remove('labor',${i})">刪除</button></div>${x.people} 人 × ${x.days} 天 × $${M(x.rate)} = <b>$${M(s)}</b></div>`}).join("");$("laborTotal").textContent=M(lt);
+let et=0;$("expenseList").innerHTML=D.expenses.map((x,i)=>{et+=x.amount;return `<div class=item><div class=row><span>${x.date}｜${esc(x.cat)}｜${esc(x.desc)}</span><b>$${M(x.amount)}</b></div><button class=danger onclick="remove('expenses',${i})">刪除</button></div>`}).join("");$("expenseTotal").textContent=M(et);
+$("recordList").innerHTML=D.records.map((x,i)=>`<div class=item><div class=row><b>${x.date}</b><span>${esc(x.workers)}</span></div><div>${esc(x.content)}</div><div class=small>${esc(x.note)}</div><button class=danger onclick="remove('records',${i})">刪除</button></div>`).join("");
+$("photoList").innerHTML=D.photos.map((x,i)=>`<div class=item><img class=thumb src="${x}"><button class=danger onclick="remove('photos',${i})">刪除照片</button></div>`).join("");
+let paid=D.invoices.reduce((s,x)=>s+x.amount,0),total=D.invoices.length?D.invoices[D.invoices.length-1].total:N("invTotal");$("invoiceList").innerHTML=D.invoices.map((x,i)=>`<div class=item><div class=row><span>${x.date}</span><b>$${M(x.amount)}</b></div><button class=danger onclick="remove('invoices',${i})">刪除</button></div>`).join("");
+$("invoiceOut").innerHTML=`累計請款：<b>$${M(paid)}</b><br>剩餘：<b>$${M(Math.max(0,total-paid))}</b>`;$("memo").value=D.memo||"";
+}
+
+function profitCalc(){let inc=N("income"),c=N("costMaterial")+N("costLabor")+N("costOther"),p=inc-c;$("profitOut").innerHTML=`總成本：<b>$${M(c)}</b><br>預估利潤：<b>$${M(p)}</b><br>毛利率：<b>${inc?(p/inc*100).toFixed(1):0}%</b>`}
+$("photoInput").addEventListener("change",e=>{[...e.target.files].forEach(f=>{let r=new FileReader();r.onload=()=>{D.photos.push(r.result);save()};r.readAsDataURL(f)})});
+
+function printQuote(){let rows=D.quotes.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.name)}</td><td>${x.qty} ${esc(x.unit)}</td><td>$${M(x.price)}</td><td>$${M(x.qty*x.price)}</td></tr>`).join("");$("printArea").innerHTML=`<h1>工程報價單</h1><p>客戶：${esc($("quoteCustomer").value)}　電話：${esc($("quotePhone").value)}　日期：${esc($("quoteDate").value)}</p><table><tr><th>項次</th><th>項目</th><th>數量</th><th>單價</th><th>小計</th></tr>${rows}</table><h2>合計：$${$("quoteTotal").textContent}</h2><p>備註：${esc($("quoteNote").value)}</p>`;window.print()}
+function printInvoice(){let paid=D.invoices.reduce((s,x)=>s+x.amount,0),total=N("invTotal");$("printArea").innerHTML=`<h1>工程請款單</h1><p>日期：${esc($("invDate").value)}</p><table><tr><th>工程總價</th><th>累計已請款</th><th>剩餘</th></tr><tr><td>$${M(total)}</td><td>$${M(paid)}</td><td>$${M(Math.max(0,total-paid))}</td></tr></table>`;window.print()}
+
+function exportData(){let blob=new Blob([JSON.stringify(D,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="工程工具箱V7資料.json";a.click();$("dataStatus").textContent="已匯出全部資料"}
+function restoreData(input){let f=input.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{D=JSON.parse(r.result);save();alert("資料還原成功")}catch(e){alert("備份檔格式錯誤")}};r.readAsText(f)}
+function clearData(){if(confirm("確定清除本機所有工程工具箱資料？")){localStorage.removeItem(KEY);location.reload()}}
+
+$("quoteDate").value=new Date().toISOString().slice(0,10);$("invDate").value=new Date().toISOString().slice(0,10);render();
+
+let newWorker=null;
+if("serviceWorker" in navigator){
+ navigator.serviceWorker.register("./sw.js").then(reg=>{
+   reg.update();
+   reg.addEventListener("updatefound",()=>{
+     const w=reg.installing;
+     w.addEventListener("statechange",()=>{if(w.state==="installed" && navigator.serviceWorker.controller){newWorker=w;$("updateBar").style.display="block"}});
+   });
+ }).catch(()=>{});
+}
+function applyUpdate(){if(newWorker)newWorker.postMessage({type:"SKIP_WAITING"});else location.reload()}
+navigator.serviceWorker?.addEventListener("controllerchange",()=>location.reload());
+</script>
+
+<nav class="v8-bottom" aria-label="V8快速選單">
+<button onclick="go('dashboard')">📊<br>總覽</button>
+<button onclick="go('project')">🏠<br>工程</button>
+<button onclick="go('calc')">🧮<br>計算</button>
+<button onclick="go('quote')">💰<br>報價</button>
+<button onclick="go('document')">📄<br>請款</button>
+</nav>
+
+</body>
+</html>
