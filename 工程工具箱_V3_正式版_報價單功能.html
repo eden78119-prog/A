@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="工程工具箱 V3">
+<meta name="theme-color" content="#1f2937">
+<title>工程工具箱 V3</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;background:#f3f4f6;color:#111827}
+header{background:#1f2937;color:#fff;padding:22px 18px calc(18px + env(safe-area-inset-top));text-align:center;position:sticky;top:0;z-index:5}
+h1{margin:0;font-size:24px}.sub{opacity:.82;font-size:13px;margin-top:5px}
+main{max-width:700px;margin:auto;padding:14px 14px 50px}
+.card{background:#fff;border-radius:16px;padding:16px;margin:12px 0;box-shadow:0 2px 10px #0000000d}
+h2{font-size:18px;margin:0 0 14px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label{font-size:13px;color:#4b5563}
+input,select{width:100%;margin-top:5px;padding:12px;border:1px solid #d1d5db;border-radius:10px;font-size:16px;background:#fff}
+button{width:100%;border:0;border-radius:11px;padding:13px;font-size:16px;font-weight:700;background:#1f2937;color:#fff;margin-top:12px}
+button.secondary{background:#e5e7eb;color:#111827}
+button.danger{background:#fee2e2;color:#991b1b}
+.result{font-size:29px;font-weight:800;text-align:center;padding:10px 0}
+.row{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #eee;padding:9px 0}
+.row:last-child{border:0}.money{font-weight:800}.small{font-size:12px;color:#6b7280;line-height:1.5}
+.item{border:1px solid #e5e7eb;border-radius:12px;padding:12px;margin-top:9px}
+.item b{font-size:16px}.item .actions{display:flex;gap:8px}.item button{margin-top:8px;padding:9px}
+.total{font-size:24px;font-weight:800;text-align:right;margin-top:12px}
+.tag{display:inline-block;background:#e5e7eb;border-radius:999px;padding:5px 9px;font-size:12px;margin:3px}
+@media(max-width:430px){.grid{grid-template-columns:1fr}}
+
+.quote-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.print-preview{display:none}
+@media print{
+  body{background:#fff!important}
+  header,main{display:none!important}
+  .print-preview{display:block!important;padding:24px;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;color:#111}
+  .print-preview h1{color:#111;text-align:center;font-size:25px;margin:0 0 6px}
+  .print-preview .meta{display:grid;grid-template-columns:1fr 1fr;gap:6px 24px;margin:14px 0 20px}
+  .print-preview table{width:100%;border-collapse:collapse;font-size:14px}
+  .print-preview th,.print-preview td{border:1px solid #999;padding:8px}
+  .print-preview th{text-align:center}
+  .print-preview td:nth-child(2),.print-preview td:nth-child(3),.print-preview td:nth-child(4){text-align:right}
+  .print-preview .sum{text-align:right;font-size:20px;font-weight:800;margin-top:14px}
+  .print-preview .note{margin-top:28px;font-size:12px;color:#555}
+}
+
+</style>
+</head>
+<body>
+<header><h1>🏗️ 工程工具箱</h1><div class="sub">V3 試用版｜計算・報價・材料・人工・成本</div></header>
+<main>
+
+<section class="card">
+<h2>① 混凝土計算</h2>
+<div class="grid">
+<div><label>長度（m）</label><input id="cl" type="number" step="0.01" value="4.3"></div>
+<div><label>寬度（m）</label><input id="cw" type="number" step="0.01" value="6.3"></div>
+<div><label>厚度（cm）</label><input id="ct" type="number" step="0.1" value="18"></div>
+<div><label>數量</label><input id="cq" type="number" step="1" value="2"></div>
+<div><label>單價（元/m³）</label><input id="cp" type="number" step="1" value="3200"></div>
+<div><label>損耗率（%）</label><input id="cwaste" type="number" step="0.1" value="0"></div>
+</div>
+<button onclick="calcConcrete()">計算混凝土</button><div id="concreteOut"></div>
+</section>
+
+<section class="card">
+<h2>② 鋼筋重量＋材料費</h2>
+<div class="grid">
+<div><label>鋼筋號數</label><select id="bar"><option value="3">#3（D10）</option><option value="4">#4（D13）</option><option value="5" selected>#5（D16）</option><option value="6">#6（D19）</option><option value="7">#7（D22）</option><option value="8">#8（D25）</option></select></div>
+<div><label>總長度（m）</label><input id="bl" type="number" step="0.01" value="100"></div>
+<div><label>單價（元/kg）</label><input id="bp" type="number" step="0.1" value="23"></div>
+</div>
+<button onclick="calcBar()">計算鋼筋</button><div id="barOut"></div>
+</section>
+
+<section class="card">
+<h2>③ 面積／坪數</h2>
+<div class="grid">
+<div><label>長度（m）</label><input id="al" type="number" step="0.01" value="10"></div>
+<div><label>寬度（m）</label><input id="aw" type="number" step="0.01" value="5"></div>
+</div>
+<button onclick="calcArea()">計算面積</button><div id="areaOut"></div>
+</section>
+
+<section class="card">
+<h2>④ 模板工程</h2>
+<div class="grid">
+<div><label>構件</label><select id="tc"><option value="column">柱</option><option value="beam">樑</option><option value="wall">牆</option><option value="slab">版／地坪</option></select></div>
+<div><label>數量</label><input id="tq" type="number" value="4"></div>
+<div><label>長度（m）</label><input id="tl" type="number" step="0.01" value="0.25"></div>
+<div><label>寬度（m）</label><input id="tw" type="number" step="0.01" value="0.35"></div>
+<div><label>高度（m）</label><input id="th" type="number" step="0.01" value="3.1"></div>
+<div><label>單價（元/m²）</label><input id="tp" type="number" value="1100"></div>
+</div>
+<button onclick="calcTemplate()">計算模板</button><div id="templateOut"></div>
+</section>
+
+<section class="card">
+<h2>⑤ 磚牆數量</h2>
+<div class="grid">
+<div><label>牆長（m）</label><input id="brickL" type="number" step="0.01" value="10"></div>
+<div><label>牆高（m）</label><input id="brickH" type="number" step="0.01" value="3"></div>
+<div><label>每 m² 磚數（塊）</label><input id="brickRate" type="number" step="0.1" value="50"></div>
+<div><label>損耗率（%）</label><input id="brickWaste" type="number" step="0.1" value="5"></div>
+<div><label>單價（元/塊）</label><input id="brickP" type="number" step="0.1" value="8"></div>
+</div>
+<button onclick="calcBrick()">計算磚數</button><div id="brickOut"></div>
+<div class="small">每 m² 磚數可依你實際使用的磚尺寸自行輸入。</div>
+</section>
+
+<section class="card">
+<h2>⑥ 磁磚數量</h2>
+<div class="grid">
+<div><label>施工面積（m²）</label><input id="tileA" type="number" step="0.01" value="20"></div>
+<div><label>磚長（cm）</label><input id="tileL" type="number" value="60"></div>
+<div><label>磚寬（cm）</label><input id="tileW" type="number" value="60"></div>
+<div><label>損耗率（%）</label><input id="tileWaste" type="number" step="0.1" value="5"></div>
+<div><label>每箱片數</label><input id="tileBox" type="number" step="1" value="4"></div>
+<div><label>單片價格（元）</label><input id="tileP" type="number" step="0.1" value="150"></div>
+</div>
+<button onclick="calcTile()">計算磁磚</button><div id="tileOut"></div>
+</section>
+
+<section class="card">
+<h2>⑦ 油漆／防水材料</h2>
+<div class="grid">
+<div><label>施工面積（m²）</label><input id="paintA" type="number" value="100"></div>
+<div><label>每公升施工量（m²/L）</label><input id="paintRate" type="number" step="0.1" value="8"></div>
+<div><label>施工道數</label><input id="paintCoats" type="number" value="2"></div>
+<div><label>損耗率（%）</label><input id="paintWaste" type="number" step="0.1" value="10"></div>
+<div><label>每公升單價（元）</label><input id="paintP" type="number" value="450"></div>
+</div>
+<button onclick="calcPaint()">計算材料</button><div id="paintOut"></div>
+</section>
+
+<section class="card">
+<h2>⑧ 單筆金額</h2>
+<div class="grid">
+<div><label>數量</label><input id="mq" type="number" step="0.01" value="10"></div>
+<div><label>單價（元）</label><input id="mp" type="number" value="800"></div>
+</div>
+<button onclick="calcMoney()">計算金額</button><div id="moneyOut"></div>
+</section>
+
+<section class="card">
+<h2>⑨ 工程報價／請款清單</h2>
+<div class="grid">
+<div><label>項目</label><input id="qname" value="貼磚工程"></div>
+<div><label>單位</label><input id="qunit" value="m²"></div>
+<div><label>數量</label><input id="qqty" type="number" step="0.01" value="20"></div>
+<div><label>單價（元）</label><input id="qprice" type="number" value="1300"></div>
+</div>
+<button onclick="addQuote()">＋加入項目</button>
+<div id="quoteList"></div>
+<div class="total">總計：$<span id="quoteTotal">0</span></div>
+<button class="secondary" onclick="clearQuote()">清空報價</button>
+</section>
+
+<section class="card">
+<h2>⑩ 材料估算</h2>
+<div class="grid">
+<div><label>材料名稱</label><input id="matName" value="水泥"></div>
+<div><label>數量</label><input id="matQty" type="number" step="0.01" value="10"></div>
+<div><label>單位</label><input id="matUnit" value="包"></div>
+<div><label>單價（元）</label><input id="matPrice" type="number" value="180"></div>
+</div>
+<button onclick="addMaterial()">＋加入材料</button>
+<div id="matList"></div>
+<div class="total">材料合計：$<span id="matTotal">0</span></div>
+</section>
+
+<section class="card">
+<h2>⑪ 人工費</h2>
+<div class="grid">
+<div><label>工種</label><input id="laborName" value="泥作"></div>
+<div><label>人數</label><input id="laborPeople" type="number" value="2"></div>
+<div><label>工數（天）</label><input id="laborDays" type="number" step="0.5" value="1"></div>
+<div><label>每日工資（元）</label><input id="laborPrice" type="number" value="3000"></div>
+</div>
+<button onclick="addLabor()">＋加入人工</button>
+<div id="laborList"></div>
+<div class="total">人工合計：$<span id="laborTotal">0</span></div>
+</section>
+
+<section class="card">
+<h2>⑫ 工程成本</h2>
+<div class="grid">
+<div><label>工程收入（元）</label><input id="income" type="number" value="100000"></div>
+<div><label>材料費（元）</label><input id="costMat" type="number" value="30000"></div>
+<div><label>人工費（元）</label><input id="costLabor" type="number" value="20000"></div>
+<div><label>其他費用（元）</label><input id="costOther" type="number" value="5000"></div>
+</div>
+<button onclick="calcProfit()">計算工程成本</button><div id="profitOut"></div>
+</section>
+
+<section class="card">
+<h2>⑬ 單位換算</h2>
+<div class="grid">
+<div><label>數值</label><input id="convValue" type="number" step="0.0001" value="1"></div>
+<div><label>換算</label><select id="convType"><option value="mcm">m ↔ cm</option><option value="cmMm">cm ↔ mm</option><option value="m2ping">m² → 坪</option><option value="pingm2">坪 → m²</option><option value="m3l">m³ → 公升</option></select></div>
+</div>
+<button onclick="convert()">換算</button><div id="convOut"></div>
+</section>
+
+<section class="card">
+<h2>⑭ 工程報價單</h2>
+<div class="quote-meta">
+<div><label>工程名稱</label><input id="printProject" value="工程報價單"></div>
+<div><label>報價日期</label><input id="printDate" type="date"></div>
+<div><label>客戶名稱</label><input id="printCustomer" value=""></div>
+<div><label>聯絡電話</label><input id="printPhone" value=""></div>
+</div>
+<div><label>備註</label><input id="printNote" value="以上報價依現場實際施工數量結算。"></div>
+<button onclick="generateQuotePreview()">產生報價單</button>
+<button class="secondary" onclick="window.print()">列印／另存 PDF</button>
+<div id="printStatus" class="small" style="margin-top:8px"></div>
+</section>
+
+<section class="card">
+<button class="secondary" onclick="clearInputs()">清除所有輸入</button>
+</section>
+</main>
+
+<div id="printPreview" class="print-preview"></div>
+
+
+<script>
+const n=id=>Number(document.getElementById(id).value)||0;
+const money=x=>Math.round(x).toLocaleString("zh-TW");
+const out=(id,html)=>document.getElementById(id).innerHTML=html;
+
+function calcConcrete(){let base=n("cl")*n("cw")*(n("ct")/100)*n("cq"),v=base*(1+n("cwaste")/100),cost=v*n("cp");out("concreteOut",`<div class="result">${v.toFixed(4)} m³</div><div class="row"><span>含損耗前</span><span>${base.toFixed(4)} m³</span></div><div class="row"><span>預估金額</span><span class="money">$${money(cost)}</span></div>`)}
+function calcBar(){const dia={3:10,4:13,5:16,6:19,7:22,8:25}[document.getElementById("bar").value];let kg=n("bl")*dia*dia/162,cost=kg*n("bp");out("barOut",`<div class="result">${kg.toFixed(2)} kg</div><div class="row"><span>單位重</span><span>${(dia*dia/162).toFixed(3)} kg/m</span></div><div class="row"><span>預估材料費</span><span class="money">$${money(cost)}</span></div>`)}
+function calcArea(){let a=n("al")*n("aw"),p=a/3.305785;out("areaOut",`<div class="result">${a.toFixed(2)} m²</div><div class="row"><span>坪數</span><span>${p.toFixed(2)} 坪</span></div>`)}
+function calcTemplate(){const t=document.getElementById("tc").value,l=n("tl"),w=n("tw"),h=n("th"),q=n("tq"),p=n("tp");let a=0,f="";if(t==="column"){a=2*(l+w)*h*q;f="2×(長＋寬)×高×數量"}if(t==="beam"){a=(2*h+w)*l*q;f="(2×高＋寬)×長×數量"}if(t==="wall"){a=2*l*h*q;f="2×長×高×數量"}if(t==="slab"){a=l*w*q;f="長×寬×數量"}out("templateOut",`<div class="result">${a.toFixed(2)} m²</div><div class="row"><span>計算方式</span><span>${f}</span></div><div class="row"><span>預估模板費</span><span class="money">$${money(a*p)}</span></div>`)}
+function calcBrick(){let a=n("brickL")*n("brickH"),q=Math.ceil(a*n("brickRate")*(1+n("brickWaste")/100)),cost=q*n("brickP");out("brickOut",`<div class="result">${q.toLocaleString()} 塊</div><div class="row"><span>牆面積</span><span>${a.toFixed(2)} m²</span></div><div class="row"><span>預估材料費</span><span class="money">$${money(cost)}</span></div>`)}
+function calcTile(){let pieceA=n("tileL")/100*n("tileW")/100,q=Math.ceil(n("tileA")/pieceA*(1+n("tileWaste")/100)),boxes=Math.ceil(q/n("tileBox")),cost=q*n("tileP");out("tileOut",`<div class="result">${q.toLocaleString()} 片</div><div class="row"><span>建議箱數</span><span>${boxes} 箱</span></div><div class="row"><span>預估材料費</span><span class="money">$${money(cost)}</span></div>`)}
+function calcPaint(){let liters=n("paintA")/n("paintRate")*n("paintCoats")*(1+n("paintWaste")/100),cost=liters*n("paintP");out("paintOut",`<div class="result">${liters.toFixed(1)} L</div><div class="row"><span>預估材料費</span><span class="money">$${money(cost)}</span></div>`)}
+function calcMoney(){out("moneyOut",`<div class="result">$${money(n("mq")*n("mp"))}</div>`)}
+let quotes=[],materials=[],labors=[];
+function addQuote(){const name=document.getElementById("qname").value||"未命名",unit=document.getElementById("qunit").value||"",qty=n("qqty"),price=n("qprice");quotes.push({name,unit,qty,price});renderQuote()}
+function renderQuote(){let total=0;out("quoteList",quotes.map((x,i)=>{let s=x.qty*x.price;total+=s;return `<div class="item"><b>${i+1}. ${x.name}</b><div class="row"><span>${x.qty} ${x.unit} × $${money(x.price)}</span><span class="money">$${money(s)}</span></div><button class="danger" onclick="quotes.splice(${i},1);renderQuote()">刪除</button></div>`}).join(""));document.getElementById("quoteTotal").textContent=money(total)}
+function clearQuote(){quotes=[];renderQuote()}
+function addMaterial(){const name=document.getElementById("matName").value||"材料",qty=n("matQty"),unit=document.getElementById("matUnit").value||"",price=n("matPrice");materials.push({name,qty,unit,price});renderMaterials()}
+function renderMaterials(){let total=0;out("matList",materials.map((x,i)=>{let s=x.qty*x.price;total+=s;return `<div class="item"><b>${x.name}</b><div class="row"><span>${x.qty} ${x.unit} × $${money(x.price)}</span><span class="money">$${money(s)}</span></div><button class="danger" onclick="materials.splice(${i},1);renderMaterials()">刪除</button></div>`}).join(""));document.getElementById("matTotal").textContent=money(total)}
+function addLabor(){const name=document.getElementById("laborName").value||"工種",people=n("laborPeople"),days=n("laborDays"),price=n("laborPrice");labors.push({name,people,days,price});renderLabor()}
+function renderLabor(){let total=0;out("laborList",labors.map((x,i)=>{let s=x.people*x.days*x.price;total+=s;return `<div class="item"><b>${x.name}</b><div class="row"><span>${x.people} 人 × ${x.days} 天 × $${money(x.price)}</span><span class="money">$${money(s)}</span></div><button class="danger" onclick="labors.splice(${i},1);renderLabor()">刪除</button></div>`}).join(""));document.getElementById("laborTotal").textContent=money(total)}
+function calcProfit(){let income=n("income"),cost=n("costMat")+n("costLabor")+n("costOther"),profit=income-cost,rate=income?profit/income*100:0;out("profitOut",`<div class="result">$${money(profit)}</div><div class="row"><span>總成本</span><span>$${money(cost)}</span></div><div class="row"><span>毛利率</span><span>${rate.toFixed(1)}%</span></div>`)}
+function convert(){let v=n("convValue"),t=document.getElementById("convType").value,r="",u="";if(t==="mcm"){r=v*100;u="cm"}if(t==="cmMm"){r=v*10;u="mm"}if(t==="m2ping"){r=v/3.305785;u="坪"}if(t==="pingm2"){r=v*3.305785;u="m²"}if(t==="m3l"){r=v*1000;u="L"}out("convOut",`<div class="result">${r.toLocaleString("zh-TW",{maximumFractionDigits:4})} ${u}</div>`)}
+function clearInputs(){document.querySelectorAll("input").forEach(i=>i.value="0");document.querySelectorAll('[id$="Out"]').forEach(x=>x.innerHTML="")}
+renderQuote();renderMaterials();renderLabor();
+
+function generateQuotePreview(){
+  const project=document.getElementById("printProject").value||"工程報價單";
+  const date=document.getElementById("printDate").value||new Date().toISOString().slice(0,10);
+  const customer=document.getElementById("printCustomer").value||"—";
+  const phone=document.getElementById("printPhone").value||"—";
+  const note=document.getElementById("printNote").value||"";
+  let total=0;
+  const rows=quotes.length?quotes.map((x,i)=>{
+    const s=x.qty*x.price; total+=s;
+    return `<tr><td>${i+1}</td><td>${escapeHtml(x.name)}</td><td>${x.qty} ${escapeHtml(x.unit)}</td><td>$${money(x.price)}</td><td>$${money(s)}</td></tr>`;
+  }).join(""):`<tr><td colspan="5" style="text-align:center">尚未加入報價項目</td></tr>`;
+  out("printPreview",`
+    <h1>${escapeHtml(project)}</h1>
+    <div style="text-align:center;margin-bottom:18px">工程報價單</div>
+    <div class="meta">
+      <div>客戶：${escapeHtml(customer)}</div>
+      <div>日期：${escapeHtml(date)}</div>
+      <div>電話：${escapeHtml(phone)}</div>
+      <div>報價編號：${new Date().getTime()}</div>
+    </div>
+    <table>
+      <thead><tr><th>項次</th><th>工程項目</th><th>數量／單位</th><th>單價</th><th>小計</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="sum">報價合計：$${money(total)}</div>
+    <div class="note">備註：${escapeHtml(note)}</div>
+  `);
+  document.getElementById("printStatus").textContent="報價單已產生；點「列印／另存 PDF」即可輸出。";
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+}
+
+</script>
+</body>
+</html>
